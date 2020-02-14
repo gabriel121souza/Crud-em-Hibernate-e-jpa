@@ -1,13 +1,22 @@
 package br.com.devmedia.revjpa.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -30,7 +39,36 @@ public class Person implements Serializable {
 	
 	@Column(name = "AGE", nullable = false)
 	private Integer age;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "DOCUMENT_ID")
+	private Document document;
 
+	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Phone> phones;
+	
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "PERSONS_ADDRESSES",
+			joinColumns = @JoinColumn(name = "ID_PERSON"),
+			inverseJoinColumns = @JoinColumn(name = "ID_ADDRESS")
+    )
+	private List<Address> addresses;
+	
+	public void addPhone(Phone phone) {
+		if (phones == null) {
+			phones = new ArrayList<Phone>();
+		}
+		phone.setPerson(this);
+		phones.add(phone);
+	}
+	
+	public void delPhone(Phone phone) {
+		if (phones != null) {
+			phones.remove(phone);
+		}
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -61,6 +99,31 @@ public class Person implements Serializable {
 
 	public void setAge(Integer age) {
 		this.age = age;
+	}	
+
+	public Document getDocument() {
+		return document;
+	}
+
+	public void setDocument(Document document) {
+		this.document = document;
+	}
+	
+
+	public List<Phone> getPhones() {
+		return phones;
+	}
+
+	public void setPhones(List<Phone> phones) {
+		this.phones = phones;
+	}	
+
+	public List<Address> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(List<Address> addresses) {
+		this.addresses = addresses;
 	}
 
 	@Override
@@ -90,6 +153,7 @@ public class Person implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Person [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", age=" + age + "]";
-	}	
+		return "Person [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", age=" + age
+				+ ", document=" + document + "]";
+	}
 }
